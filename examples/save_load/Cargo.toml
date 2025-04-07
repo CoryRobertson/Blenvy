@@ -9,7 +9,7 @@ default = []
 bevy-inspector = ["bevy-inspector-egui"]
 
 [dependencies]
-bevy = { version = "0.15", features = ["dynamic_linking"] }
+bevy = { version = "0.16.0-rc.3", features = ["dynamic_linking"] }
 blenvy = { path = "../../crates/blenvy" }
 
 serde_json = "1.0.108"

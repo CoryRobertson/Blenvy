@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy::utils::HashMap;
+use bevy::platform_support::collections::HashMap;
 
 #[derive(Component, Reflect, Default, Debug)]
 #[reflect(Component)]

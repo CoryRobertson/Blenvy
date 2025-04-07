@@ -73,7 +73,7 @@ pub fn get_descendants(
             let child_descendants_display = get_descendants(
                 all_children,
                 all_names,
-                child,
+                &child,
                 __all_transforms,
                 __all_global_transforms,
                 nesting + 4,
@@ -86,7 +86,7 @@ pub fn get_descendants(
 }
 
 pub fn draw_hierarchy_debug(
-    root: Query<Entity, Without<Parent>>,
+    root: Query<Entity, Without<ChildOf>>,
     all_children: Query<&Children>,
     all_names: Query<&Name>,
     all_transforms: Query<&Transform>,
@@ -119,7 +119,7 @@ pub fn draw_hierarchy_debug(
 
         //
     }
-    let display = display.single();
+    let display = display.single().unwrap();
     *writer.text(display, 0) = hierarchy_display.join("\n");
 }
 
@@ -162,7 +162,7 @@ fn __check_for_gltf_extras(
             );
             gltf_extra_infos_lines.push(formatted_extras);
         }
-        let display = display.single();
+        let display = display.single().unwrap();
         *writer.text(display, 0) = gltf_extra_infos_lines.join("\n");
     }
 }
@@ -182,7 +182,7 @@ fn __check_for_component(
         println!("yoho component");
     }
 
-    let display = display.single();
+    let display = display.single().unwrap();
     *writer.text(display, 0) = info_lines.join("\n");
 }
 

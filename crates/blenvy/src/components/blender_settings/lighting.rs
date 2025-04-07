@@ -2,6 +2,7 @@ use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::pbr::DirectionalLightShadowMap;
 use bevy::prelude::*;
 use bevy::render::view::{ColorGrading, ColorGradingGlobal, ColorGradingSection};
+use bevy::prelude::info;
 
 use crate::GltfComponentsSet;
 
@@ -115,6 +116,7 @@ fn process_background_shader(
             color: background_shader.color,
             // Just a guess, see <https://github.com/bevyengine/bevy/issues/12280>
             brightness: background_shader.strength * 400.0,
+            ..Default::default()
         });
         commands.insert_resource(ClearColor(background_shader.color));
     }

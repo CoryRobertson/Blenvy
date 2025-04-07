@@ -11,39 +11,35 @@ pub mod blender_settings;
 
 use bevy::{
     ecs::{component::Component, reflect::ReflectComponent},
-    prelude::{App, IntoSystemConfigs, Plugin, SystemSet, Update},
+    prelude::{App, Plugin, SystemSet, Update},
     reflect::Reflect,
 };
+use bevy::prelude::IntoScheduleConfigs;
 
 /// A Bevy plugin for extracting components from gltf files and automatically adding them to the relevant entities
 /// It will automatically run every time you load a gltf file
 /// Add this plugin to your Bevy app to get access to this feature
 /// ```
-/// # use bevy::prelude::*;
-/// # use bevy::gltf::*;
-/// # use blenvy::ComponentsFromGltfPlugin;
+/// use bevy::prelude::*;
+/// use bevy::gltf::*;
 ///
 /// //too barebones of an example to be meaningfull, please see https://github.com/kaosat-dev/Blenvy/examples/basic for a real example
 /// fn main() {
-///    App::new()
+///
+/// App::new()
 ///         .add_plugins(DefaultPlugins)
-///         .add_plugin(ComponentsFromGltfPlugin)
-///         .add_system(spawn_level)
+///         .add_plugins(blenvy::ComponentsFromGltfPlugin {})
+///         .add_systems(Startup,spawn_level)
 ///         .run();
 /// }
 ///
 /// fn spawn_level(
 ///   asset_server: Res<AssetServer>,
 ///   mut commands: bevy::prelude::Commands,
-///   keycode: Res<Input<KeyCode>>,
-
+///   keycode: Res<ButtonInput<KeyCode>>,
 /// ){
-/// if keycode.just_pressed(KeyCode::Return) {
-///  commands.spawn(SceneBundle {
-///   scene: asset_server.load("basic/models/level1.glb"),
-///   transform: Transform::from_xyz(2.0, 0.0, -5.0),
-/// ..Default::default()
-/// });
+/// if keycode.just_pressed(KeyCode::Enter) {
+///  commands.spawn(SceneRoot(asset_server.load("basic/models/level1.glb"))).insert(Transform::from_xyz(2.0, 0.0, -5.0));
 /// }
 ///}
 /// ```

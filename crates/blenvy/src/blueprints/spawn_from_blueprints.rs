@@ -1,6 +1,7 @@
 use std::path::Path;
 
-use bevy::{gltf::Gltf, prelude::*, scene::SceneInstance, utils::hashbrown::HashMap};
+use bevy::{gltf::Gltf, prelude::*, scene::SceneInstance};
+use bevy::log::prelude::*;
 
 use crate::{
     AnimationInfos, AssetLoadTracker, AssetToBlueprintInstancesMapper, BlueprintAnimationInfosLink,
@@ -118,7 +119,7 @@ pub(super) fn blueprints_prepare_metadata_file_for_spawn(
             Entity,
             &BlueprintInfo,
             Option<&Name>,
-            Option<&Parent>,
+            Option<&ChildOf>,
             Option<&HideUntilReady>,
             Option<&Visibility>,
             Option<&AddToGameWorld>,
@@ -493,15 +494,15 @@ pub(crate) fn blueprints_assets_loaded(
         let mut original_children: Vec<Entity> = vec![];
         if let Ok(c) = all_children.get(entity) {
             for child in c.iter() {
-                original_children.push(*child);
+                original_children.push(child);
             }
         }
 
         // TODO: not a fan of this
         // prepare data for animations
         let mut graph = AnimationGraph::new();
-        let mut named_animations: HashMap<String, Handle<AnimationClip>> = HashMap::new();
-        let mut named_indices: HashMap<String, AnimationNodeIndex> = HashMap::new();
+        let mut named_animations: HashMap<String, Handle<AnimationClip>,FixedHasher> = bevy::platform_support::collections::HashMap::with_hasher(FixedHasher);
+        let mut named_indices: HashMap<String, AnimationNodeIndex,FixedHasher> = bevy::platform_support::collections::HashMap::with_hasher(FixedHasher);
 
         for (key, clip) in blueprint_gltf.named_animations.iter() {
             named_animations.insert(key.to_string(), clip.clone());
@@ -559,7 +560,7 @@ pub(crate) fn blueprints_scenes_spawned(
     with_blueprint_infos: Query<(Entity, Option<&Name>), With<BlueprintInfo>>,
 
     all_children: Query<&Children>,
-    all_parents: Query<&Parent>,
+    all_parents: Query<&ChildOf>,
 
     // mut sub_blueprint_trackers: Query<(Entity, &mut SubBlueprintsSpawnTracker, &BlueprintInfo)>,
     mut commands: Commands,
@@ -573,7 +574,7 @@ pub(crate) fn blueprints_scenes_spawned(
         );
         let mut sub_blueprint_instances: Vec<Entity> = vec![];
         let mut sub_blueprint_instance_names: Vec<Name> = vec![];
-        let mut tracker_data: HashMap<Entity, bool> = HashMap::new();
+        let mut tracker_data: bevy::platform_support::collections::HashMap<Entity, bool> = HashMap::with_hasher(FixedHasher);
 
         if track_root.is_none() {
             for parent in all_parents.iter_ancestors(entity) {
@@ -645,7 +646,9 @@ pub(crate) fn blueprints_scenes_spawned(
 // perhaps using component hooks or observers (ie , if a ComponentSpawning + Parent)
 use crate::CopyComponents;
 use std::any::TypeId;
-
+use bevy::ecs::relationship::Relationship;
+use bevy::platform_support::collections::HashMap;
+use bevy::platform_support::hash::FixedHasher;
 use super::BlueprintMetaHandle;
 
 #[derive(Component, Reflect, Debug)]
@@ -669,9 +672,9 @@ pub(crate) fn blueprints_cleanup_spawned_scene(
         ),
         Added<BlueprintChildrenReady>,
     >,
-    animation_players: Query<(Entity, &Parent), With<AnimationPlayer>>,
+    animation_players: Query<(Entity, &ChildOf), With<AnimationPlayer>>,
     all_children: Query<&Children>,
-    all_parents: Query<&Parent>,
+    all_parents: Query<&ChildOf>,
     with_animation_infos: Query<&AnimationInfos>,
     // FIXME: meh
     anims: Query<&BlueprintAnimations>,
@@ -693,8 +696,8 @@ pub(crate) fn blueprints_cleanup_spawned_scene(
                                                              // let diff = HashSet::from_iter(original_children.0).difference(HashSet::from_iter(children));
                                                              // we find the first child that was not in the entity before (aka added during the scene spawning)
         for child in children.iter() {
-            if !original_children.0.contains(child) {
-                blueprint_root_entity = *child;
+            if !original_children.0.contains(&child) {
+                blueprint_root_entity = child;
                 break;
             }
         }
@@ -709,7 +712,7 @@ pub(crate) fn blueprints_cleanup_spawned_scene(
         commands.queue(CopyComponents {
             source: blueprint_root_entity,
             destination: original,
-            exclude: vec![TypeId::of::<Parent>(), TypeId::of::<Children>()],
+            exclude: vec![TypeId::of::<ChildOf>(), TypeId::of::<Children>()],
             stringent: false,
         });
 
@@ -717,7 +720,7 @@ pub(crate) fn blueprints_cleanup_spawned_scene(
         if let Ok(root_entity_children) = all_children.get(blueprint_root_entity) {
             for child in root_entity_children.iter() {
                 // info!("copying child {:?} upward from {:?} to {:?}", names.get(*child), blueprint_root_entity, original);
-                commands.entity(original).add_child(*child);
+                commands.entity(original).add_child(child);
             }
         }
 

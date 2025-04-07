@@ -1,4 +1,5 @@
-use bevy::{render::primitives::Aabb, utils::HashMap};
+use std::collections::HashMap;
+use bevy::{render::primitives::Aabb};
 use std::path::PathBuf;
 
 pub mod components;

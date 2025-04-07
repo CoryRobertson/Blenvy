@@ -20,8 +20,8 @@ pub use copy_components::*;
 pub(crate) mod hot_reload;
 pub(crate) use hot_reload::*;
 
-use bevy::{prelude::*, utils::hashbrown::HashMap};
-
+use bevy::{prelude::*, platform_support::collections::HashMap};
+use bevy::platform_support::hash::FixedHasher;
 use crate::GltfComponentsSet;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
@@ -81,7 +81,7 @@ impl Plugin for BlueprintsPlugin {
     fn build(&self, app: &mut App) {
         app.register_watching_for_changes()
             .insert_resource(AssetToBlueprintInstancesMapper {
-                untyped_id_to_blueprint_entity_ids: HashMap::new(),
+                untyped_id_to_blueprint_entity_ids: HashMap::with_hasher(FixedHasher),
             })
             .add_event::<BlueprintEvent>()
             .register_type::<BlueprintInfo>()

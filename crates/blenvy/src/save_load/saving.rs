@@ -2,9 +2,9 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
-use bevy::prelude::World;
+use bevy::prelude::{World,info};
 use bevy::{prelude::*, tasks::IoTaskPool};
-
+use bevy::ecs::relationship::Relationship;
 use crate::{BlenvyConfig, BlueprintInfo, Dynamic, FromBlueprint, RootEntity, SpawnBlueprint};
 
 use super::{DynamicEntitiesRoot, OriginalParent, StaticEntitiesRoot};
@@ -44,8 +44,8 @@ pub fn should_save(saving_requests: Option<Res<SavingRequested>>) -> bool {
 // any child of dynamic/ saveable entities that is not saveable itself should be removed from the list of children
 pub(crate) fn prepare_save_game(
     saveables: Query<Entity, (With<Dynamic>, With<BlueprintInfo>)>,
-    root_entities: Query<Entity, Or<(With<DynamicEntitiesRoot>, Without<Parent>)>>, //  With<DynamicEntitiesRoot>
-    dynamic_entities: Query<(Entity, &Parent, Option<&Children>), With<Dynamic>>,
+    root_entities: Query<Entity, Or<(With<DynamicEntitiesRoot>, Without<ChildOf>)>>, //  With<DynamicEntitiesRoot>
+    dynamic_entities: Query<(Entity, &ChildOf, Option<&Children>), With<Dynamic>>,
     _static_entities: Query<(Entity, &BlueprintInfo), With<StaticEntitiesRoot>>,
 
     mut commands: Commands,
@@ -64,9 +64,9 @@ pub(crate) fn prepare_save_game(
 
         if let Some(children) = children {
             for sub_child in children.iter() {
-                if !dynamic_entities.contains(*sub_child) {
-                    commands.entity(*sub_child).insert(OriginalParent(entity));
-                    commands.entity(entity).remove_children(&[*sub_child]);
+                if !dynamic_entities.contains(sub_child) {
+                    commands.entity(sub_child).insert(OriginalParent(entity));
+                    commands.entity(sub_child).remove::<ChildOf>();
                 }
             }
         }
@@ -127,7 +127,7 @@ pub(crate) fn save_game(world: &mut World) {
         ;
 
     // for root entities, it is the same EXCEPT we make sure parents are not included
-    let filter_root = filter.clone().deny::<Parent>();
+    let filter_root = filter.clone().deny::<ChildOf>();
 
     let filter_resources = config
         .clone()

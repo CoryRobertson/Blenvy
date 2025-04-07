@@ -5,6 +5,7 @@ use bevy::{
     render::render_resource::*,
 };
 use std::ops::Range;
+use bevy::platform_support::collections::HashMap;
 
 #[derive(Component, Reflect, Default, Debug)]
 #[reflect(Component)]
@@ -156,7 +157,6 @@ impl MaterialExtension for MyExtension {
     }
 }
 
-use bevy::utils::HashMap;
 
 #[derive(Component, Reflect, Default, Debug)]
 #[reflect(Component)]

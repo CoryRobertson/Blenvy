@@ -1,6 +1,7 @@
 use std::any::TypeId;
-
-use bevy::{prelude::*, utils::hashbrown::HashSet};
+use bevy::{prelude::*};
+use bevy::platform_support::collections::HashSet;
+use bevy::platform_support::hash::FixedHasher;
 use blenvy::{
     AddToGameWorld, BlenvyPlugin, BlueprintInfo, BlueprintWorld, Dynamic, HideUntilReady,
     LoadingRequest, SavingRequest, SpawnBlueprint,
@@ -16,28 +17,34 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use component_examples::*;
 
 fn main() {
+    let mut b = bevy::platform_support::collections::HashSet::with_hasher(FixedHasher);
+    
+    for aa in [
+        TypeId::of::<Name>(),
+        TypeId::of::<Transform>(),
+        //TypeId::of::<Velocity>(),
+        TypeId::of::<InheritedVisibility>(),
+        TypeId::of::<Camera>(),
+        TypeId::of::<Camera3d>(),
+        //TypeId::of::<Tonemapping>(),
+        //TypeId::of::<CameraTrackingOffset>(),
+        TypeId::of::<Projection>(),
+        //TypeId::of::<CameraRenderGraph>(),
+        //TypeId::of::<Frustum>(),
+        TypeId::of::<GlobalTransform>(),
+        //TypeId::of::<VisibleEntities>(),
+        //TypeId::of::<Pickable>(),
+    ] {
+        b.insert(aa);
+    }
+    
     App::new()
         .add_plugins((
             DefaultPlugins.set(AssetPlugin::default()),
             #[cfg(feature = "bevy-inspector")]
             WorldInspectorPlugin::new(),
             BlenvyPlugin {
-                save_component_filter: SceneFilter::Allowlist(HashSet::from([
-                    TypeId::of::<Name>(),
-                    TypeId::of::<Transform>(),
-                    //TypeId::of::<Velocity>(),
-                    TypeId::of::<InheritedVisibility>(),
-                    TypeId::of::<Camera>(),
-                    TypeId::of::<Camera3d>(),
-                    //TypeId::of::<Tonemapping>(),
-                    //TypeId::of::<CameraTrackingOffset>(),
-                    TypeId::of::<Projection>(),
-                    //TypeId::of::<CameraRenderGraph>(),
-                    //TypeId::of::<Frustum>(),
-                    TypeId::of::<GlobalTransform>(),
-                    //TypeId::of::<VisibleEntities>(),
-                    //TypeId::of::<Pickable>(),
-                ])),
+                save_component_filter: SceneFilter::Allowlist(b),
                 ..Default::default()
             },
             // our custom plugins
@@ -79,7 +86,7 @@ fn spawn_blueprint_instance(keycode: Res<ButtonInput<KeyCode>>, mut commands: Co
             bevy::prelude::Name::from(format!("test{}", name_index)),
             HideUntilReady,
             AddToGameWorld,
-            TransformBundle::from_transform(Transform::from_xyz(x, 2.0, y)),
+            Transform::from_xyz(x, 2.0, y),
         ));
     }
 }

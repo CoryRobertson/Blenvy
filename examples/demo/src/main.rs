@@ -52,21 +52,32 @@ pub fn spawn_blueprint_instance(keycode: Res<ButtonInput<KeyCode>>, mut commands
         let vel_z: f32 = rng.gen_range(-range..range);
 
         let name_index: u64 = rng.gen();
+        
+        commands.spawn(bevy::prelude::Name::from(format!("test{}", name_index)))
+            .insert(BluePrintBundle {
+                blueprint: BlueprintInfo::from_path("blueprints/Health_Pickup.glb"),
+                ..Default::default()
+            })
+            .insert(Dynamic)
+            .insert(HideUntilReady)
+            .insert(AddToGameWorld)
+            .insert(Transform::from_xyz(x, 2.0, y))
+            .insert(LinearVelocity(Vec3::new(vel_x, vel_y, vel_z)));
 
-        let __new_entity = commands
-            .spawn((
-                BluePrintBundle {
-                    blueprint: BlueprintInfo::from_path("blueprints/Health_Pickup.glb"),
-                    ..Default::default()
-                },
-                Dynamic,
-                bevy::prelude::Name::from(format!("test{}", name_index)),
-                HideUntilReady,
-                AddToGameWorld,
-                TransformBundle::from_transform(Transform::from_xyz(x, 2.0, y)),
-                LinearVelocity(Vec3::new(vel_x, vel_y, vel_z)),
-            ))
-            .id();
+        // let __new_entity = commands
+        //     .spawn((
+        //         BluePrintBundle {
+        //             blueprint: BlueprintInfo::from_path("blueprints/Health_Pickup.glb"),
+        //             ..Default::default()
+        //         },
+        //         Dynamic,
+        //         bevy::prelude::Name::from(format!("test{}", name_index)),
+        //         HideUntilReady,
+        //         AddToGameWorld,
+        //         Transform::from_xyz(x, 2.0, y),
+        //         LinearVelocity(Vec3::new(vel_x, vel_y, vel_z)),
+        //     ))
+        //     .id();
         //         commands.entity(world).add_child(new_entity);
     }
 }

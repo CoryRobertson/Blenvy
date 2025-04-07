@@ -6,10 +6,10 @@ pub use export_types::*;
 use bevy::{
     app::Startup,
     asset::AssetPlugin,
-    prelude::{App, IntoSystemConfigs, Plugin, Res, Resource},
+    prelude::{App, Plugin, Res, Resource},
     scene::SceneFilter,
 };
-
+use bevy::prelude::IntoScheduleConfigs;
 use crate::BlenvyConfig;
 
 pub struct ExportRegistryPlugin {
